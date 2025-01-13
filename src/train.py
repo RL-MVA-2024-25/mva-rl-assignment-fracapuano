@@ -20,6 +20,7 @@ class ProjectAgent(Agent):
         self.buffer_size = 5  # Match the stack_size from training
         self.obs_buffer = None
         self.policy = None
+        self.obs_dim = 6  # The dimension of a single observation
 
     def act(self, observation, use_random=False):
         # Transform observation as in training
@@ -33,8 +34,8 @@ class ProjectAgent(Agent):
             self.obs_buffer = np.roll(self.obs_buffer, shift=-1, axis=0)
             self.obs_buffer[-1] = observation
 
-        # Stack observations to match training environment
-        stacked_obs = self.obs_buffer.flatten()
+        # Reshape to match expected shape (5, 6)
+        stacked_obs = self.obs_buffer.reshape(self.buffer_size, self.obs_dim)
         
         # Get prediction using SB3's API
         return self.policy.predict(stacked_obs, deterministic=True)[0]
