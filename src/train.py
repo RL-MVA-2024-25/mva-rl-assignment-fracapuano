@@ -1,5 +1,4 @@
 import os
-import wandb
 from argparse import ArgumentParser
 from pathlib import Path
 from interface import Agent
