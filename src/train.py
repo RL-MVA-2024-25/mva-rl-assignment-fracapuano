@@ -2,6 +2,7 @@ import os
 from argparse import ArgumentParser
 from pathlib import Path
 from interface import Agent
+import numpy as np
 
 from stable_baselines3 import PPO
 
@@ -15,11 +16,28 @@ model_name = "ppo/best_model.zip"
 
 
 class ProjectAgent(Agent):
+    def __init__(self):
+        self.buffer_size = 5  # Match the stack_size from training
+        self.obs_buffer = None
+        self.policy = None
+
     def act(self, observation, use_random=False):
-        # same transformation for the observation that one does when training
+        # Transform observation as in training
         observation = np.log(np.maximum(observation, 1e-6))
-        # prediction using SB3's (deterministic) API
-        return self.policy.predict(observation, deterministic=True)[0]
+        
+        # Initialize buffer if not yet created
+        if self.obs_buffer is None:
+            self.obs_buffer = np.tile(observation, (self.buffer_size, 1))
+        else:
+            # Roll the buffer and update the latest observation
+            self.obs_buffer = np.roll(self.obs_buffer, shift=-1, axis=0)
+            self.obs_buffer[-1] = observation
+
+        # Stack observations to match training environment
+        stacked_obs = self.obs_buffer.flatten()
+        
+        # Get prediction using SB3's API
+        return self.policy.predict(stacked_obs, deterministic=True)[0]
 
     def save(self, path):
         self.policy.save(path)
