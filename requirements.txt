@@ -4,3 +4,4 @@ numpy >=1.21.0
 scikit-learn>=1.4.0
 pytest
 stable-baselines3>=2.4.1
+coolname
